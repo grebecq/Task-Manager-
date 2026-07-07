@@ -2,6 +2,7 @@ package fedoseev.tasks.system.controller;
 
 import fedoseev.tasks.system.models.CreatedTaskRequest;
 import fedoseev.tasks.system.models.Task;
+import fedoseev.tasks.system.models.TaskEntity;
 import fedoseev.tasks.system.service.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class TaskController {
     }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Task> getTaskById(
+  public ResponseEntity<TaskEntity> getTaskById(
           @PathVariable Long id) {
       log.info("Call method getTaskById id={}",id);
 
@@ -33,24 +34,32 @@ public class TaskController {
   }
 
   @GetMapping()
-  public ResponseEntity<List<Task>> getAllTasks(){
+  public ResponseEntity<List<TaskEntity>> getAllTasks(){
       log.info("Call method getAllTask");
 
       return ResponseEntity.ok(taskService.getAllTasks());
   }
 
   @PostMapping()
-  public ResponseEntity<Task> createdTask(
+  public ResponseEntity<TaskEntity> createdTask(
          @RequestBody CreatedTaskRequest createdTaskRequest){
         log.info("Call method createdTask");
       return ResponseEntity.status(201)
               .body(taskService.createdTask(createdTaskRequest));
   }
 
+  @PostMapping("/{id}/start")
+  public ResponseEntity<TaskEntity> startTask(
+          @PathVariable Long id
+  ){
+        log.info("Call method startTask id{}",id);
+        return ResponseEntity.ok(taskService.startTask(id));
+  }
+
   @PutMapping("/{id}")
-  public ResponseEntity<Task> updatedTaskById(
+  public ResponseEntity<TaskEntity> updatedTaskById(
           @PathVariable Long id,
-          @RequestBody Task taskToUpdate
+          @RequestBody TaskEntity taskToUpdate
   ){
       return ResponseEntity.ok(taskService.updatedTask(id,taskToUpdate));
   }
@@ -64,6 +73,7 @@ public class TaskController {
     return ResponseEntity.ok()
             .build();
   }
+
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNotFound(NoSuchElementException e) {
