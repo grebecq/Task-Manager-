@@ -1,16 +1,22 @@
 package fedoseev.tasks.system.service;
 
-import fedoseev.tasks.system.models.CreatedTaskRequest;
-import fedoseev.tasks.system.models.TaskEntity;
-import fedoseev.tasks.system.models.TaskStatus;
+import fedoseev.tasks.system.exceptions.InvalidTaskIdException;
+import fedoseev.tasks.system.exceptions.TaskAlreadyCompletedException;
+import fedoseev.tasks.system.exceptions.TaskCannotBeStartedException;
+import fedoseev.tasks.system.exceptions.TaskNotFoundException;
+import fedoseev.tasks.system.models.task.*;
 import fedoseev.tasks.system.repositories.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -20,45 +26,29 @@ public class TaskService{
  @Autowired
  private TaskRepository taskRepository;
 
+ @Autowired
+ private TaskMapper taskMapper;
+
   private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
 
-    public TaskEntity getTaskById(Long id) {
+    public Task getTaskById(Long id) {
 
         if (id == null || id <= 0) {
-            throw new NoSuchElementException("Task id must be positive");
+            throw new InvalidTaskIdException("Task id must be positive");
         }
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task not found with id: " + id));
+        TaskEntity  entity = getTaskEntityOrThrow(id);
+        return  taskMapper.toModel(entity);
     }
 
-  public List<TaskEntity> getAllTasks(){
+  public List<Task> getAllTasks(){
 
-        return taskRepository.findAll();
+        return taskRepository.findAll()
+                .stream().map(taskMapper::toModel).toList();
   }
 
-    public TaskEntity createdTask(
+    public Task createdTask(
             @RequestBody CreatedTaskRequest request){
-
-        if (request.creatorId() == null){
-            throw new NoSuchElementException("creator id must not null");
-        }
-
-        if (request.assignedUserId() == null){
-            throw new NoSuchElementException("assignedUserId must not null");
-        }
-
-        if (request.createDateTime() == null){
-            throw new NoSuchElementException("createDateTime must not null");
-        }
-
-        if (request.deadlineDate() == null){
-            throw new NoSuchElementException("deadlineDate must not null");
-        }
-
-        if (request.priority() == null){
-            throw new NoSuchElementException("priority must not null");
-        }
 
         TaskEntity newTask = new TaskEntity();
 
@@ -77,56 +67,95 @@ public class TaskService{
         TaskEntity savedTask = taskRepository.save(newTask);
         log.info("Created task information id={} and CreatedTaskRequest={} ",savedTask.getId(),request);
 
-        return savedTask;
+        return taskMapper.toModel(savedTask);
     }
 
-    public TaskEntity updatedTask(
+    public Task updatedTask(
             @PathVariable Long id,
-            @RequestBody TaskEntity taskToUpdate) {
+            @RequestBody Task taskToUpdate) {
 
         log.info("Called method updatedTask id={} and taskToUpdate={}",id,taskToUpdate);
 
 
-        TaskEntity existingTask = taskRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task id=" + id + " not found"));
+        TaskEntity existingTask =  getTaskEntityOrThrow(id);
 
 
         if (existingTask.getStatus() == TaskStatus.DONE
-                && taskToUpdate.getStatus() != TaskStatus.IN_PROGRESS) {
-            throw new IllegalArgumentException("Cannot update task id=" + id + " because it is already DONE");
+                && taskToUpdate.status() != TaskStatus.IN_PROGRESS) {
+            throw new TaskAlreadyCompletedException("Cannot update task id=" + id + " because it is already DONE");
         }
 
-        existingTask.setCreatorId(taskToUpdate.getCreatorId());
-        existingTask.setAssignedUserId(taskToUpdate.getAssignedUserId());
-        existingTask.setStatus(taskToUpdate.getStatus());
-        existingTask.setCreateDateTime(taskToUpdate.getCreateDateTime());
-        existingTask.setDeadlineDate(taskToUpdate.getDeadlineDate());
-        existingTask.setPriority(taskToUpdate.getPriority());
+        existingTask.setCreatorId(taskToUpdate.creatorId());
+        existingTask.setAssignedUserId(taskToUpdate.assignedUserId());
+        existingTask.setStatus(taskToUpdate.status());
+        existingTask.setCreateDateTime(taskToUpdate.createDateTime());
+        existingTask.setDeadlineDate(taskToUpdate.deadlineDate());
+        existingTask.setPriority(taskToUpdate.priority());
+        existingTask.setDoneDateTime(taskToUpdate.doneDateTime());
 
         var savedUpdated = taskRepository.save(existingTask);
         log.info("Updated task by id={} and Entity={}",id,taskToUpdate);
-        return savedUpdated;
+        return taskMapper.toModel(savedUpdated);
     }
 
     public void deletedById(Long id) {
-        TaskEntity taskEntity = taskRepository.findById(id)
-                .orElseThrow(()-> new NoSuchElementException("Task by id" + id + " not found"));
+        getTaskEntityOrThrow(id);
         taskRepository.deleteById(id);
+        log.info("Deleted by id{}",id);
     }
 
-    public TaskEntity startTask(Long id) {
-        TaskEntity taskEntity = taskRepository.findById(id)
-                .orElseThrow(()-> new NoSuchElementException("Task by id" + id + " not found"));
+    public Task startTask(Long id) {
+        TaskEntity taskEntity = getTaskEntityOrThrow(id);
         if (taskEntity.getAssignedUserId() == null){
-            throw  new IllegalArgumentException("AssignedUserId must be not null");
+            throw new InvalidTaskIdException("Task id=" + id + " cannot be started from status " + taskEntity.getStatus());
         }
-        Long count =  taskRepository.countByAssignedUserIdAndStatus(taskEntity.getAssignedUserId(), TaskStatus.IN_PROGRESS);
+        if (taskEntity.getStatus() != TaskStatus.CREATED){
+            throw new TaskCannotBeStartedException("Cannot start task because it is already in progress");
+        }
+        long count =  taskRepository.countByAssignedUserIdAndStatus(taskEntity.getAssignedUserId(), TaskStatus.IN_PROGRESS);
 
         if (count > 4 ){
-            throw new IllegalArgumentException("Count assigned task more 4 ");
+            throw new TaskCannotBeStartedException("Count assigned task more 4 ");
         }
         taskEntity.setStatus(TaskStatus.IN_PROGRESS);
 
-        return taskRepository.save(taskEntity);
+        var saved = taskRepository.save(taskEntity);
+        return taskMapper.toModel(saved);
+    }
+
+    public Task completeTask(Long id) {
+        TaskEntity taskEntity =  getTaskEntityOrThrow(id);
+
+        if (taskEntity.getStatus() == (TaskStatus.DONE)){
+            throw  new TaskAlreadyCompletedException("Cannot complete task");
+        }
+
+       if (taskEntity.getAssignedUserId() == null ){
+           throw new IllegalArgumentException("AssignedUserId must be not null");
+       }
+       if ( taskEntity.getDeadlineDate() == null){
+           throw new IllegalArgumentException("DeadLineDate must be not null");
+       }
+       taskEntity.setStatus(TaskStatus.DONE);
+       taskEntity.setDoneDateTime(LocalDateTime.now());
+
+       var save = taskRepository.save(taskEntity);
+
+        return taskMapper.toModel(save);
+    }
+
+    public List<Task> searchTasks(TaskSearchFilter filter) {
+        Pageable pageable = PageRequest.of(filter.pageNum(), filter.pageSize());
+
+        Page<TaskEntity> page = taskRepository.searchTasks(
+                filter.creatorId(), filter.assignedUserId(), filter.status(), filter.priority(), pageable
+        );
+
+        return page.stream().map(taskMapper::toModel).toList();
+    }
+
+    private TaskEntity getTaskEntityOrThrow(Long id) {
+       return taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task by id" + id + " not found"));
     }
 }

@@ -1,16 +1,14 @@
 package fedoseev.tasks.system.controller;
 
-import fedoseev.tasks.system.models.CreatedTaskRequest;
-import fedoseev.tasks.system.models.Task;
-import fedoseev.tasks.system.models.TaskEntity;
+import fedoseev.tasks.system.models.task.*;
 import fedoseev.tasks.system.service.TaskService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @RestController
@@ -26,40 +24,46 @@ public class TaskController {
     }
 
   @GetMapping("/{id}")
-  public ResponseEntity<TaskEntity> getTaskById(
+  public ResponseEntity<Task> getTaskById(
           @PathVariable Long id) {
       log.info("Call method getTaskById id={}",id);
-
       return ResponseEntity.ok( taskService.getTaskById(id));
   }
 
   @GetMapping()
-  public ResponseEntity<List<TaskEntity>> getAllTasks(){
+  public ResponseEntity<List<Task>> getAllTasks(){
       log.info("Call method getAllTask");
-
       return ResponseEntity.ok(taskService.getAllTasks());
   }
 
   @PostMapping()
-  public ResponseEntity<TaskEntity> createdTask(
-         @RequestBody CreatedTaskRequest createdTaskRequest){
+  public ResponseEntity<Task> createdTask(
+          @Valid @RequestBody CreatedTaskRequest createdTaskRequest){
         log.info("Call method createdTask");
       return ResponseEntity.status(201)
               .body(taskService.createdTask(createdTaskRequest));
   }
 
   @PostMapping("/{id}/start")
-  public ResponseEntity<TaskEntity> startTask(
+  public ResponseEntity<Task> startTask(
           @PathVariable Long id
   ){
         log.info("Call method startTask id{}",id);
         return ResponseEntity.ok(taskService.startTask(id));
   }
 
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Task> completeTask(
+            @PathVariable Long id
+    ){
+        log.info("Call method completeTask id{}",id);
+        return ResponseEntity.ok(taskService.completeTask(id));
+    }
+
   @PutMapping("/{id}")
-  public ResponseEntity<TaskEntity> updatedTaskById(
+  public ResponseEntity<Task> updatedTaskById(
           @PathVariable Long id,
-          @RequestBody TaskEntity taskToUpdate
+          @RequestBody  Task taskToUpdate
   ){
       return ResponseEntity.ok(taskService.updatedTask(id,taskToUpdate));
   }
@@ -74,18 +78,22 @@ public class TaskController {
             .build();
   }
 
-
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNotFound(NoSuchElementException e) {
-        log.warn("Not found: {}", e.getMessage());
-        return ResponseEntity.status(404).body(e.getMessage());
+    @GetMapping("/search")
+    public ResponseEntity<List<Task>> searchTasks(
+            @RequestParam(required = false) Long creatorId,
+            @RequestParam(required = false) Long assignedUserId,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "0") int pageNum
+    ) {
+        TaskSearchFilter filter = new TaskSearchFilter(creatorId, assignedUserId, status, priority, pageSize, pageNum);
+        return ResponseEntity.ok(taskService.searchTasks(filter));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public  ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e){
-        log.warn("Illegal Argument: {}", e.getMessage());
-        return ResponseEntity.status(400).body(e.getMessage());
-    }
+
+
+
 }
 
 

@@ -1,10 +1,15 @@
-package fedoseev.tasks.system.models;
+package fedoseev.tasks.system.models.task;
+
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
 public record Task(
+
         Long id,
 
+        @NotNull
         Long creatorId,
 
         Long assignedUserId,
@@ -13,8 +18,13 @@ public record Task(
 
         LocalDateTime createDateTime,
 
+        @NotNull
+        @Future
         LocalDateTime deadlineDate,
 
+        LocalDateTime doneDateTime,
+
+        @NotNull
         TaskPriority priority
 ) {
 }

@@ -1,4 +1,4 @@
-package fedoseev.tasks.system.models;
+package fedoseev.tasks.system.models.task;
 
 public enum TaskStatus {
 

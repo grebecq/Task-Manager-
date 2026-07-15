@@ -1,4 +1,4 @@
-package fedoseev.tasks.system.models;
+package fedoseev.tasks.system.models.task;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
@@ -34,8 +34,12 @@ public class TaskEntity {
     @Column(name = "createDateTime")
     private LocalDateTime createDateTime;
 
+
     @Column(name = "deadlineDate")
     private LocalDateTime deadlineDate;
+
+    @Column(name = "doneDateTime")
+    LocalDateTime doneDateTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority")
