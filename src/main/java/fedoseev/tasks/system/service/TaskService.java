@@ -72,26 +72,21 @@ public class TaskService{
 
     public Task updatedTask(
             @PathVariable Long id,
-            @RequestBody Task taskToUpdate) {
+            @RequestBody TaskUpdated taskToUpdate) {
 
         log.info("Called method updatedTask id={} and taskToUpdate={}",id,taskToUpdate);
 
-
         TaskEntity existingTask =  getTaskEntityOrThrow(id);
 
-
-        if (existingTask.getStatus() == TaskStatus.DONE
-                && taskToUpdate.status() != TaskStatus.IN_PROGRESS) {
-            throw new TaskAlreadyCompletedException("Cannot update task id=" + id + " because it is already DONE");
+        if  (existingTask.getStatus() == TaskStatus.DONE ){
+            throw new TaskAlreadyCompletedException("Task already completed");
         }
-
-        existingTask.setCreatorId(taskToUpdate.creatorId());
+        if (existingTask.getStatus() == TaskStatus.IN_PROGRESS){
+            checkAssignedUserId(taskToUpdate.assignedUserId());
+        }
         existingTask.setAssignedUserId(taskToUpdate.assignedUserId());
-        existingTask.setStatus(taskToUpdate.status());
-        existingTask.setCreateDateTime(taskToUpdate.createDateTime());
-        existingTask.setDeadlineDate(taskToUpdate.deadlineDate());
         existingTask.setPriority(taskToUpdate.priority());
-        existingTask.setDoneDateTime(taskToUpdate.doneDateTime());
+        existingTask.setDeadlineDate(taskToUpdate.deadlineDate());
 
         var savedUpdated = taskRepository.save(existingTask);
         log.info("Updated task by id={} and Entity={}",id,taskToUpdate);
@@ -107,16 +102,12 @@ public class TaskService{
     public Task startTask(Long id) {
         TaskEntity taskEntity = getTaskEntityOrThrow(id);
         if (taskEntity.getAssignedUserId() == null){
-            throw new InvalidTaskIdException("Task id=" + id + " cannot be started from status " + taskEntity.getStatus());
+            throw new TaskCannotBeStartedException("Task id=" + id + " cannot be started from status " + taskEntity.getStatus());
         }
         if (taskEntity.getStatus() != TaskStatus.CREATED){
             throw new TaskCannotBeStartedException("Cannot start task because it is already in progress");
         }
-        long count =  taskRepository.countByAssignedUserIdAndStatus(taskEntity.getAssignedUserId(), TaskStatus.IN_PROGRESS);
-
-        if (count > 4 ){
-            throw new TaskCannotBeStartedException("Count assigned task more 4 ");
-        }
+        checkAssignedUserId(taskEntity.getAssignedUserId());
         taskEntity.setStatus(TaskStatus.IN_PROGRESS);
 
         var saved = taskRepository.save(taskEntity);
@@ -157,5 +148,13 @@ public class TaskService{
     private TaskEntity getTaskEntityOrThrow(Long id) {
        return taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task by id" + id + " not found"));
+    }
+
+    private void checkAssignedUserId(Long userId){
+        long count =  taskRepository.countByAssignedUserIdAndStatus(userId, TaskStatus.IN_PROGRESS);
+
+        if (count > 4 ){
+            throw new TaskCannotBeStartedException("Count assigned task more 4 ");
+        }
     }
 }

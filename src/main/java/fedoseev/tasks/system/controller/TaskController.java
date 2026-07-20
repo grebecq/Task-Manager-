@@ -63,7 +63,7 @@ public class TaskController {
   @PutMapping("/{id}")
   public ResponseEntity<Task> updatedTaskById(
           @PathVariable Long id,
-          @RequestBody  Task taskToUpdate
+          @RequestBody  TaskUpdated taskToUpdate
   ){
       return ResponseEntity.ok(taskService.updatedTask(id,taskToUpdate));
   }
@@ -73,8 +73,8 @@ public class TaskController {
           @PathVariable Long id
   ){
         log.info("called method deletedTask by id={}",id);
-      taskService.deletedById(id);
-    return ResponseEntity.ok()
+        taskService.deletedById(id);
+        return ResponseEntity.ok()
             .build();
   }
 

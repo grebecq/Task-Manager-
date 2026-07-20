@@ -34,17 +34,7 @@ public class GlobalExceptionHandler {
                 .body(errorDto);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDto> handleIllegalArgument(IllegalArgumentException e) {
-        var errorDto = new ErrorResponseDto(
-                "handle IllegalArgumentException",
-                e.getMessage(),
-                LocalDateTime.now()
-        );
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(errorDto);
-    }
+
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponseDto> handleNoSuchElement(NoSuchElementException e) {
@@ -142,7 +132,7 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.CONFLICT)
                 .body(errorDto);
     }
 
@@ -158,7 +148,7 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.CONFLICT)
                 .body(errorDto);
     }
 

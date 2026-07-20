@@ -1,0 +1,313 @@
+:root {
+  --ink: #0e1420;
+  --ink-soft: #161d2c;
+  --ink-card: #1b2333;
+  --line: #2a3448;
+  --text: #e7ebf3;
+  --text-dim: #8b95a8;
+  --amber: #f5a524;
+  --amber-dim: #c9860f;
+  --green: #4ade80;
+  --red: #f16565;
+  --font-display: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+.screen { min-height: 100vh; }
+
+/* ---------- Brand ---------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.brand-mark {
+  color: var(--amber);
+  font-size: 1.2rem;
+}
+.brand-name em {
+  font-style: normal;
+  color: var(--amber);
+}
+
+/* ---------- Login ---------- */
+#loginScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(245,165,36,0.08), transparent 40%),
+    var(--ink);
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 2.25rem 2rem;
+}
+.login-card .brand { margin-bottom: 2rem; }
+.login-card h1 {
+  font-size: 1.4rem;
+  margin: 0 0 0.4rem;
+}
+.login-card .sub {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0 0 1.75rem;
+  line-height: 1.4;
+}
+
+.field {
+  display: block;
+  margin-bottom: 1.1rem;
+}
+.field span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.field input, .field select {
+  width: 100%;
+  background: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--amber);
+  color: #1a1200;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: #ffb840; }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-ghost:hover { border-color: var(--amber-dim); color: var(--text); }
+
+.error-msg {
+  margin-top: 1rem;
+  color: var(--red);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ---------- Focus visibility (accessibility) ---------- */
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--ink-soft);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.whoami {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* ---------- Board ---------- */
+.board {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.board-head h1 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.status-banner {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  background: rgba(241,101,101,0.1);
+  border: 1px solid rgba(241,101,101,0.3);
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 3rem 1rem;
+}
+
+/* ---------- Task cards ---------- */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.task-card {
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 200px;
+}
+.task-id {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.task-meta {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  width: fit-content;
+}
+.badge-created { background: rgba(139,149,168,0.15); color: var(--text-dim); }
+.badge-in_progress { background: rgba(245,165,36,0.15); color: var(--amber); }
+.badge-done { background: rgba(74,222,128,0.15); color: var(--green); }
+
+.priority-high { color: var(--red); }
+.priority-medium { color: var(--amber); }
+.priority-low { color: var(--text-dim); }
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.btn-sm {
+  border: 1px solid var(--line);
+  background: var(--ink-soft);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.btn-sm:hover { border-color: var(--amber-dim); }
+.btn-sm.danger:hover { border-color: var(--red); color: var(--red); }
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 10;
+}
+.modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.75rem;
+}
+.modal h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  font-family: var(--font-display);
+}
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+.modal-actions .btn-ghost, .modal-actions .btn-primary {
+  flex: 1;
+  width: auto;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .topbar { padding: 1rem; }
+  .board { padding: 1.25rem; }
+  .task-card { flex-direction: column; align-items: flex-start; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

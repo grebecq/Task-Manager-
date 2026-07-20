@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task System — панель</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ЭКРАН ВХОДА -->
+<section id="loginScreen" class="screen">
+  <div class="login-card">
+    <div class="brand">
+      <span class="brand-mark">▣</span>
+      <span class="brand-name">TASK<em>SYSTEM</em></span>
+    </div>
+
+    <h1>Вход в систему</h1>
+    <p class="sub">Токен выдаётся на 30 минут, дальше нужно будет войти заново.</p>
+
+    <form id="loginForm">
+      <label class="field">
+        <span>Логин</span>
+        <input type="text" id="username" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span>Пароль</span>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </label>
+      <button type="submit" class="btn-primary">Войти →</button>
+    </form>
+
+    <p id="loginError" class="error-msg" hidden></p>
+  </div>
+</section>
+
+<!-- ОСНОВНОЙ ЭКРАН -->
+<section id="appScreen" class="screen" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">▣</span>
+      <span class="brand-name">TASK<em>SYSTEM</em></span>
+    </div>
+    <div class="topbar-right">
+      <span id="whoami" class="whoami"></span>
+      <button id="logoutBtn" class="btn-ghost">Выйти</button>
+    </div>
+  </header>
+
+  <main class="board">
+    <div class="board-head">
+      <h1>Задачи</h1>
+      <button id="newTaskBtn" class="btn-primary">+ Новая задача</button>
+    </div>
+
+    <div id="statusBanner" class="status-banner" hidden></div>
+
+    <div id="taskList" class="task-list">
+      <!-- карточки задач рендерятся сюда через JS -->
+    </div>
+
+    <p id="emptyState" class="empty-state" hidden>
+      Задач пока нет. Создайте первую — кнопка выше.
+    </p>
+  </main>
+</section>
+
+<!-- МОДАЛКА СОЗДАНИЯ ЗАДАЧИ -->
+<div id="createModal" class="modal-overlay" hidden>
+  <div class="modal">
+    <h2>Новая задача</h2>
+    <form id="createForm">
+      <label class="field">
+        <span>ID создателя</span>
+        <input type="number" id="creatorId" required>
+      </label>
+      <label class="field">
+        <span>ID исполнителя</span>
+        <input type="number" id="assignedUserId">
+      </label>
+      <label class="field">
+        <span>Приоритет</span>
+        <select id="priority">
+          <option value="LOW">Низкий</option>
+          <option value="MEDIUM" selected>Средний</option>
+          <option value="HIGH">Высокий</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Дедлайн</span>
+        <input type="date" id="deadlineDate">
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="cancelCreate" class="btn-ghost">Отмена</button>
+        <button type="submit" class="btn-primary">Создать</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
