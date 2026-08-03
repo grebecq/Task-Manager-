@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1a1a;
+    --layer: #282828;
+    --layer-2: #303030;
+    --line: #3e3e3e;
+    --line-soft: #333;
+    --text: #eff2f6;
+    --dim: #b3b3b3;
+    --mute: #808080;
+    --brand: #ffa116;
+    --brand-dark: #e8940c;
+    --easy: #00b8a3;
+    --medium: #ffc01e;
+    --hard: #ff375f;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .brandline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .glyph {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--brand);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .glyph svg { display: block; }
+  .brandline span {
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+  }
+  .brandline span b { color: var(--brand); font-weight: 700; }
+
+  .card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--layer);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 28px;
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 24px;
+  }
+  .tabs button {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--mute);
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tabs button:hover { color: var(--dim); }
+  .tabs button[data-on] {
+    background: var(--layer-2);
+    color: var(--text);
+  }
+
+  .fld { margin-bottom: 14px; }
+  .fld input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--layer-2);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 11px 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .fld input::placeholder { color: var(--mute); }
+  .fld input:focus { border-color: var(--brand); }
+
+  .go {
+    width: 100%;
+    margin-top: 8px;
+    padding: 11px;
+    background: var(--brand);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .go:hover:not(:disabled) { background: var(--brand-dark); }
+  .go:disabled { opacity: .55; cursor: default; }
+
+  .alert {
+    font-size: 13px;
+    line-height: 1.5;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .alert[data-kind="bad"]  { display: block; background: rgba(255,55,95,.11); color: var(--hard); }
+  .alert[data-kind="good"] { display: block; background: rgba(0,184,163,.11); color: var(--easy); }
+
+  .meta {
+    max-width: 400px;
+    width: 100%;
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    color: var(--mute);
+    letter-spacing: .3px;
+  }
+
+  .spin {
+    width: 13px; height: 13px;
+    border: 2px solid rgba(26,26,26,.28);
+    border-top-color: #1a1a1a;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: -2px;
+    margin-right: 7px;
+    animation: rot .6s linear infinite;
+  }
+  @keyframes rot { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="brandline">
+  <div class="glyph">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  </div>
+  <span>Task<b>Flow</b></span>
+</div>
+
+<div class="card">
+  <div class="tabs">
+    <button data-on onclick="mode('in')">Вход</button>
+    <button onclick="mode('up')">Регистрация</button>
+  </div>
+
+  <div class="alert" id="alert"></div>
+
+  <div id="form-in">
+    <div class="fld"><input id="in-u" type="text" placeholder="Логин" autocomplete="username"></div>
+    <div class="fld"><input id="in-p" type="password" placeholder="Пароль" autocomplete="current-password"></div>
+    <button class="go" id="btn-in" onclick="signIn()">Войти</button>
+  </div>
+
+  <div id="form-up" hidden>
+    <div class="fld"><input id="up-u" type="text" placeholder="Логин" autocomplete="username"></div>
+    <div class="fld"><input id="up-p" type="password" placeholder="Пароль" autocomplete="new-password"></div>
+    <div class="fld"><input id="up-p2" type="password" placeholder="Повторите пароль" autocomplete="new-password"></div>
+    <button class="go" id="btn-up" onclick="signUp()">Создать аккаунт</button>
+  </div>
+</div>
+
+<div class="meta">Spring Boot · PostgreSQL · Flyway · JWT</div>
+
+<script>
+const API = window.location.origin;
+const $ = id => document.getElementById(id);
+let tab = 'in';
+
+function mode(next) {
+  tab = next;
+  const [a, b] = document.querySelectorAll('.tabs button');
+  a.toggleAttribute('data-on', next === 'in');
+  b.toggleAttribute('data-on', next === 'up');
+  $('form-in').hidden = next !== 'in';
+  $('form-up').hidden = next !== 'up';
+  quiet();
+}
+
+function say(text, kind) {
+  const el = $('alert');
+  el.textContent = text;
+  el.dataset.kind = kind;
+}
+function quiet() { delete $('alert').dataset.kind; }
+
+function busy(btn, on, label) {
+  btn.disabled = on;
+  btn.innerHTML = on ? '<span class="spin"></span>' + label : label;
+}
+
+async function reason(res) {
+  try {
+    const body = await res.json();
+    return body.detailedMessage || body.message || 'Запрос отклонён';
+  } catch {
+    return res.status === 401 || res.status === 403
+      ? 'Неверный логин или пароль'
+      : 'Сервер недоступен';
+  }
+}
+
+function land(token, username) {
+  localStorage.setItem('tf.token', token);
+  localStorage.setItem('tf.user', username);
+  location.href = 'dashboard.html';
+}
+
+async function signIn() {
+  const username = $('in-u').value.trim();
+  const password = $('in-p').value;
+  if (!username || !password) return say('Заполните оба поля', 'bad');
+
+  const btn = $('btn-in');
+  busy(btn, true, 'Проверяем');
+  quiet();
+
+  try {
+    const res = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) throw new Error(await reason(res));
+    land(await res.text(), username);
+  } catch (e) {
+    say(e.message, 'bad');
+    busy(btn, false, 'Войти');
+  }
+}
+
+async function signUp() {
+  const username = $('up-u').value.trim();
+  const password = $('up-p').value;
+  const repeat = $('up-p2').value;
+
+  if (!username || !password) return say('Заполните логин и пароль', 'bad');
+  if (username.length < 3) return say('Логин слишком короткий', 'bad');
+  if (password.length < 4) return say('Пароль слишком короткий', 'bad');
+  if (password !== repeat) return say('Пароли не совпадают', 'bad');
+
+  const btn = $('btn-up');
+  busy(btn, true, 'Создаём');
+  quiet();
+
+  try {
+    const res = await fetch(API + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) throw new Error(await reason(res));
+    land(await res.text(), username);
+  } catch (e) {
+    say(e.message, 'bad');
+    busy(btn, false, 'Создать аккаунт');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  tab === 'in' ? signIn() : signUp();
+});
+
+$('in-u').value = localStorage.getItem('tf.user') || '';
+</script>
+</body>
+</html>

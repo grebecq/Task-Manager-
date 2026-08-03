@@ -1,0 +1,30 @@
+package fedoseev.tasks.system.task;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
+
+  @Query("""
+select count(t) from  TaskEntity  t WHERE t.assignedUserId =:assignedUserId and t.status =:status
+""")
+  long countByAssignedUserIdAndStatus(Long assignedUserId, TaskStatus status);
+
+  @Query("""
+        SELECT t FROM TaskEntity t
+        WHERE (:creatorId IS NULL OR t.creatorId = :creatorId)
+          AND (:assignedUserId IS NULL OR t.assignedUserId = :assignedUserId)
+          AND (:status IS NULL OR t.status = :status)
+          AND (:priority IS NULL OR t.priority = :priority)
+        """)
+  Page<TaskEntity> searchTasks(
+          @Param("creatorId") Long creatorId,
+          @Param("assignedUserId") Long assignedUserId,
+          @Param("status") TaskStatus status,
+          @Param("priority") TaskPriority priority,
+          Pageable pageable
+  );
+}

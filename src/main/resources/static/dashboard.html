@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow — Задачи</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1a1a1a;
+    --layer: #282828;
+    --layer-2: #303030;
+    --layer-3: #3a3a3a;
+    --line: #3e3e3e;
+    --text: #eff2f6;
+    --dim: #b3b3b3;
+    --mute: #808080;
+    --brand: #ffa116;
+    --brand-dark: #e8940c;
+    --easy: #00b8a3;
+    --medium: #ffc01e;
+    --hard: #ff375f;
+    --blue: #61afef;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--layer-3); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--layer);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    padding: 0 22px;
+  }
+
+  .brandline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+  }
+  .glyph {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--brand);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .brandline b { color: var(--brand); }
+
+  .links { display: flex; gap: 20px; }
+  .links a {
+    font-size: 14px;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color .15s;
+    cursor: pointer;
+  }
+  .links a:hover { color: var(--text); }
+  .links a[data-on] { color: var(--text); font-weight: 500; }
+
+  .nav .gap { flex: 1; }
+
+  .streak {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--dim);
+    background: var(--layer-2);
+    padding: 5px 11px;
+    border-radius: 6px;
+  }
+  .streak b { color: var(--brand); font-weight: 600; }
+
+  .me {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    padding: 4px 6px 4px 4px;
+    border-radius: 6px;
+    transition: background .15s;
+  }
+  .me:hover { background: var(--layer-2); }
+  .pic {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), #ff6b35);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    flex: none;
+  }
+  .me .nm { font-size: 13.5px; font-weight: 500; line-height: 1.2; }
+  .me .rl {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 10px;
+    color: var(--mute);
+  }
+  .exit {
+    background: none;
+    border: none;
+    color: var(--mute);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 5px;
+    line-height: 0;
+    transition: all .15s;
+  }
+  .exit:hover { color: var(--hard); background: var(--layer-2); }
+
+  .page { max-width: 1200px; margin: 0 auto; padding: 26px 22px 70px; }
+
+  .top {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 22px;
+    margin-bottom: 24px;
+  }
+
+  .banner {
+    background: var(--layer);
+    border-radius: 8px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .banner h1 { font-size: 21px; font-weight: 600; margin-bottom: 5px; }
+  .banner p { font-size: 13.5px; color: var(--mute); }
+
+  .new {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--brand);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .new:hover { background: var(--brand-dark); }
+
+  .progress {
+    background: var(--layer);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .progress .hd {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+  .progress .hd .big {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 21px;
+    font-weight: 500;
+  }
+  .progress .hd .lb { font-size: 12px; color: var(--mute); }
+
+  .meter {
+    height: 6px;
+    background: var(--layer-2);
+    border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 14px;
+  }
+  .meter i { height: 100%; display: block; transition: width .4s; }
+  .meter .m-new  { background: var(--blue); }
+  .meter .m-run  { background: var(--medium); }
+  .meter .m-done { background: var(--easy); }
+
+  .legend { display: flex; flex-direction: column; gap: 7px; }
+  .leg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--dim);
+  }
+  .leg i { width: 7px; height: 7px; border-radius: 2px; flex: none; }
+  .leg .n {
+    margin-left: auto;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .drop {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--dim);
+    background: var(--layer);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 30px 8px 13px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23808080' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    transition: background-color .15s;
+  }
+  .drop:hover { background-color: var(--layer-2); }
+  .drop option { background: var(--layer); }
+
+  .toolbar .gap { flex: 1; }
+
+  .seek { position: relative; }
+  .seek input {
+    width: 230px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--layer);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 8px 12px 8px 32px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .seek input::placeholder { color: var(--mute); }
+  .seek input:focus { border-color: var(--brand); }
+  .seek svg {
+    position: absolute;
+    left: 11px; top: 50%;
+    transform: translateY(-50%);
+    stroke: var(--mute);
+    pointer-events: none;
+  }
+
+  .grid {
+    background: var(--layer);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .hrow, .row {
+    display: grid;
+    grid-template-columns: 46px 1.4fr 130px 120px 150px 128px;
+    gap: 14px;
+    align-items: center;
+    padding: 0 18px;
+  }
+
+  .hrow {
+    height: 40px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--mute);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row {
+    min-height: 52px;
+    font-size: 14px;
+    transition: background .12s;
+  }
+  .row:nth-child(odd) { background: rgba(255,255,255,.018); }
+  .row:hover { background: var(--layer-2); }
+
+  .mark { display: grid; place-items: center; }
+  .mark svg { display: block; }
+
+  .name { display: flex; flex-direction: column; gap: 3px; }
+  .name .t { font-weight: 500; }
+  .name .t span { color: var(--mute); font-weight: 400; }
+  .name .s {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11.5px;
+    color: var(--mute);
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .tag.CREATED     { color: var(--blue);   background: rgba(97,175,239,.12); }
+  .tag.IN_PROGRESS { color: var(--medium); background: rgba(255,192,30,.12); }
+  .tag.DONE        { color: var(--easy);   background: rgba(0,184,163,.12); }
+
+  .lvl { font-size: 13.5px; font-weight: 500; }
+  .lvl.LOW    { color: var(--easy); }
+  .lvl.MEDIUM { color: var(--medium); }
+  .lvl.HIGH   { color: var(--hard); }
+
+  .due { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .due small { display: block; font-size: 11px; color: var(--mute); margin-top: 2px; }
+  .due.over { color: var(--hard); }
+
+  .acts { display: flex; gap: 5px; justify-content: flex-end; }
+  .act {
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 5px;
+    background: var(--layer-2);
+    color: var(--dim);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 0;
+    transition: all .14s;
+  }
+  .act:hover { background: var(--layer-3); color: var(--text); }
+  .act.play:hover { color: var(--medium); }
+  .act.done:hover { color: var(--easy); }
+  .act.trash:hover { color: var(--hard); }
+
+  .void { padding: 68px 20px; text-align: center; }
+  .void .ic { font-size: 34px; opacity: .3; margin-bottom: 12px; }
+  .void h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .void p { font-size: 13.5px; color: var(--mute); }
+
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+  }
+  .foot .info {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: var(--mute);
+  }
+  .foot .nav-btns { display: flex; gap: 6px; align-items: center; }
+  .pg {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--dim);
+    background: var(--layer);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .14s;
+  }
+  .pg:hover:not(:disabled) { background: var(--layer-2); color: var(--text); }
+  .pg:disabled { opacity: .35; cursor: default; }
+  .pg.now { background: var(--brand); color: #1a1a1a; font-weight: 600; }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 60;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s, visibility .2s;
+  }
+  .scrim[data-open] { opacity: 1; visibility: visible; }
+
+  .modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -46%) scale(.98);
+    width: 460px;
+    max-width: 92vw;
+    max-height: 88vh;
+    background: var(--layer);
+    border-radius: 10px;
+    z-index: 61;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .2s cubic-bezier(.32,.72,0,1);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal[data-open] {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .modal .hd {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .modal .hd h2 { font-size: 17px; font-weight: 600; }
+  .modal .hd p { font-size: 12.5px; color: var(--mute); margin-top: 3px; }
+  .x {
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 5px;
+    background: none;
+    color: var(--mute);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 0;
+    flex: none;
+    transition: all .14s;
+  }
+  .x:hover { background: var(--layer-2); color: var(--text); }
+
+  .modal .bd { padding: 22px 24px; overflow-y: auto; }
+  .modal .ft {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+  }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .in { margin-bottom: 16px; }
+  .in label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--dim);
+    margin-bottom: 7px;
+  }
+  .in input, .in select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text);
+    background: var(--layer-2);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .in input:focus, .in select:focus { border-color: var(--brand); }
+  .in input::placeholder { color: var(--mute); }
+  .in select option { background: var(--layer-2); }
+  .in .tip { font-size: 11.5px; color: var(--mute); margin-top: 6px; line-height: 1.45; }
+
+  .ghost {
+    flex: 1;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--dim);
+    background: var(--layer-2);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .14s;
+  }
+  .ghost:hover { background: var(--layer-3); color: var(--text); }
+  .fill {
+    flex: 1.6;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: var(--brand);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .fill:hover:not(:disabled) { background: var(--brand-dark); }
+  .fill:disabled { opacity: .55; cursor: default; }
+
+  .toasts {
+    position: fixed;
+    right: 20px; bottom: 20px;
+    z-index: 80;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--layer-2);
+    border-left: 3px solid var(--easy);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    max-width: 320px;
+    box-shadow: 0 6px 22px rgba(0,0,0,.4);
+    animation: slide .24s cubic-bezier(.32,.72,0,1);
+  }
+  .toast[data-bad] { border-left-color: var(--hard); }
+  @keyframes slide {
+    from { transform: translateX(16px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
+  .loading { padding: 60px 0; text-align: center; }
+  .beat { display: inline-flex; gap: 5px; }
+  .beat i {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--mute);
+    animation: blink 1.1s ease-in-out infinite;
+  }
+  .beat i:nth-child(2) { animation-delay: .15s; }
+  .beat i:nth-child(3) { animation-delay: .3s; }
+  @keyframes blink { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+
+  @media (max-width: 1024px) {
+    .top { grid-template-columns: 1fr; }
+    .hrow, .row { grid-template-columns: 40px 1fr 118px 110px; }
+    .hrow span:nth-child(5), .row .due,
+    .hrow span:nth-child(4), .row .lvl { display: none; }
+    .links, .streak { display: none; }
+    .seek input { width: 100%; }
+    .seek { flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brandline">
+    <div class="glyph">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    Task<b>Flow</b>
+  </div>
+  <div class="links">
+    <a data-on>Задачи</a>
+    <a onclick="lens('IN_PROGRESS', null)">Мои в работе</a>
+    <a onclick="lens('DONE', null)">Архив</a>
+  </div>
+  <div class="gap"></div>
+  <div class="streak">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="#ffa116"><path d="M12 2c1 5-3 6-3 10a3 3 0 006 0c0-1.5-.5-2.5-.5-2.5S17 12 17 15a5 5 0 01-10 0C7 9 12 8 12 2z"/></svg>
+    <b id="k-run">0</b> в работе
+  </div>
+  <div class="me">
+    <div class="pic" id="av">—</div>
+    <div>
+      <div class="nm" id="nm">—</div>
+      <div class="rl" id="rl">—</div>
+    </div>
+  </div>
+  <button class="exit" onclick="leave()" title="Выйти">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+  </button>
+</div>
+
+<div class="page">
+  <div class="top">
+    <div class="banner">
+      <div>
+        <h1>Все задачи</h1>
+        <p id="lede">Загружаем список</p>
+      </div>
+      <button class="new" onclick="openNew()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Новая задача
+      </button>
+    </div>
+
+    <div class="progress">
+      <div class="hd">
+        <span class="big" id="k-done">0</span>
+        <span class="lb">закрыто из <span id="k-all">0</span></span>
+      </div>
+      <div class="meter">
+        <i class="m-done" id="bar-done" style="width:0"></i>
+        <i class="m-run" id="bar-run" style="width:0"></i>
+        <i class="m-new" id="bar-new" style="width:0"></i>
+      </div>
+      <div class="legend">
+        <div class="leg"><i style="background:var(--blue)"></i> Поставлено <span class="n" id="k-new">0</span></div>
+        <div class="leg"><i style="background:var(--medium)"></i> В работе <span class="n" id="k-run2">0</span></div>
+        <div class="leg"><i style="background:var(--easy)"></i> Закрыто <span class="n" id="k-done2">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select class="drop" id="f-stage" onchange="restage()">
+      <option value="">Все стадии</option>
+      <option value="CREATED">Поставленные</option>
+      <option value="IN_PROGRESS">В работе</option>
+      <option value="DONE">Закрытые</option>
+    </select>
+    <select class="drop" id="f-level" onchange="relevel()">
+      <option value="">Любой приоритет</option>
+      <option value="HIGH">Высокий</option>
+      <option value="MEDIUM">Средний</option>
+      <option value="LOW">Низкий</option>
+    </select>
+    <select class="drop" id="f-size" onchange="resize()">
+      <option value="12">12 на странице</option>
+      <option value="25">25 на странице</option>
+      <option value="50">50 на странице</option>
+    </select>
+    <div class="gap"></div>
+    <div class="seek">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="text" placeholder="Поиск по номеру или участнику" oninput="sift()">
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="hrow">
+      <span></span>
+      <span>Задача</span>
+      <span>Стадия</span>
+      <span>Приоритет</span>
+      <span>Срок</span>
+      <span></span>
+    </div>
+    <div id="list">
+      <div class="loading"><div class="beat"><i></i><i></i><i></i></div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="info" id="info"></span>
+    <div class="nav-btns">
+      <button class="pg" id="back" onclick="page(-1)" disabled>‹</button>
+      <button class="pg now" id="here">1</button>
+      <button class="pg" id="fwd" onclick="page(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" onclick="shut()"></div>
+
+<div class="modal" id="modal">
+  <div class="hd">
+    <div>
+      <h2 id="m-ttl">Новая задача</h2>
+      <p id="m-sub">Заполните поля и сохраните</p>
+    </div>
+    <button class="x" onclick="shut()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="bd">
+    <div class="two">
+      <div class="in" id="box-creator">
+        <label for="f-creator">Постановщик</label>
+        <input id="f-creator" type="number" min="1" placeholder="1">
+      </div>
+      <div class="in">
+        <label for="f-assigned">Исполнитель</label>
+        <input id="f-assigned" type="number" min="1" placeholder="можно позже">
+      </div>
+    </div>
+
+    <div class="in">
+      <label for="f-priority">Приоритет</label>
+      <select id="f-priority">
+        <option value="LOW">Низкий</option>
+        <option value="MEDIUM" selected>Средний</option>
+        <option value="HIGH">Высокий</option>
+      </select>
+    </div>
+
+    <div class="in" id="box-made">
+      <label for="f-made">Дата постановки</label>
+      <input id="f-made" type="datetime-local">
+    </div>
+
+    <div class="in">
+      <label for="f-due">Срок сдачи</label>
+      <input id="f-due" type="datetime-local">
+      <div class="tip">Дедлайн должен быть в будущем — иначе сервер отклонит запрос.</div>
+    </div>
+
+    <div class="in" id="box-note" hidden>
+      <div class="tip" style="margin:0">Стадия меняется кнопками в списке. Здесь редактируются исполнитель, приоритет и срок.</div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <button class="ghost" onclick="shut()">Отмена</button>
+    <button class="fill" id="m-save" onclick="commit()">Создать</button>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+const API = window.location.origin;
+const $ = id => document.getElementById(id);
+
+let rows = [], shown = [], editing = null;
+let pageNum = 0, pageSize = 12;
+let fStatus = '', fPriority = '', query = '';
+
+const token = () => localStorage.getItem('tf.token');
+const auth = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
+
+function toast(text, bad) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  if (bad) el.dataset.bad = '';
+  el.textContent = text;
+  $('toasts').appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .2s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 220);
+  }, 3200);
+}
+
+async function reason(res) {
+  try {
+    const body = await res.json();
+    return body.detailedMessage || body.message || 'Запрос отклонён';
+  } catch {
+    return 'Запрос отклонён (' + res.status + ')';
+  }
+}
+
+const STAGE = { CREATED: 'Поставлена', IN_PROGRESS: 'В работе', DONE: 'Закрыта' };
+const LEVEL = { HIGH: 'Высокий', MEDIUM: 'Средний', LOW: 'Низкий' };
+const MONTHS = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+
+function human(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return {
+    day: d.getDate() + ' ' + MONTHS[d.getMonth()],
+    year: d.getFullYear(),
+    time: String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'),
+    past: d < new Date()
+  };
+}
+
+function localValue(offsetDays) {
+  const d = new Date();
+  if (offsetDays) d.setDate(d.getDate() + offsetDays);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
+function plural(n, one, few, many) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b > 1 && b < 5) return few;
+  if (b === 1) return one;
+  return many;
+}
+
+async function pull() {
+  const params = new URLSearchParams({ pageNum, pageSize });
+  if (fStatus) params.set('status', fStatus);
+  if (fPriority) params.set('priority', fPriority);
+
+  try {
+    const res = await fetch(API + '/tasks/search?' + params, { headers: auth() });
+    if (res.status === 401 || res.status === 403) return leave();
+    if (!res.ok) throw new Error(await reason(res));
+    rows = await res.json();
+    sift();
+    tally();
+  } catch (e) {
+    toast(e.message, true);
+    $('list').innerHTML = '<div class="void"><div class="ic">⚠</div><h3>Не удалось загрузить</h3><p>Проверьте, запущено ли приложение</p></div>';
+  }
+}
+
+async function tally() {
+  try {
+    const res = await fetch(API + '/tasks', { headers: auth() });
+    if (!res.ok) return;
+    const all = await res.json();
+
+    const n = all.length;
+    const created = all.filter(t => t.status === 'CREATED').length;
+    const running = all.filter(t => t.status === 'IN_PROGRESS').length;
+    const closed = all.filter(t => t.status === 'DONE').length;
+
+    $('k-all').textContent = n;
+    $('k-new').textContent = created;
+    $('k-run').textContent = running;
+    $('k-run2').textContent = running;
+    $('k-done').textContent = closed;
+    $('k-done2').textContent = closed;
+
+    const pct = v => n ? (v / n * 100).toFixed(1) + '%' : '0';
+    $('bar-done').style.width = pct(closed);
+    $('bar-run').style.width = pct(running);
+    $('bar-new').style.width = pct(created);
+
+    $('lede').textContent = n
+      ? n + ' ' + plural(n, 'задача', 'задачи', 'задач') + ' в системе'
+      : 'Пока ничего не поставлено';
+  } catch {}
+}
+
+function sift() {
+  query = $('q').value.trim().toLowerCase();
+  shown = query
+    ? rows.filter(t =>
+        String(t.id).includes(query) ||
+        String(t.assignedUserId ?? '').includes(query) ||
+        String(t.creatorId ?? '').includes(query))
+    : rows.slice();
+  paint();
+}
+
+function icon(status) {
+  if (status === 'DONE') return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00b8a3" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  if (status === 'IN_PROGRESS') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffc01e" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round"/></svg>';
+  return '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#61afef" stroke-width="2.2"><circle cx="12" cy="12" r="9"/></svg>';
+}
+
+function paint() {
+  const box = $('list');
+
+  if (!shown.length) {
+    box.innerHTML = '<div class="void"><div class="ic">☰</div><h3>Здесь пусто</h3><p>' +
+      (query ? 'По запросу ничего не найдено' : 'Поставьте первую задачу') + '</p></div>';
+    $('info').textContent = '';
+    $('back').disabled = pageNum === 0;
+    $('fwd').disabled = true;
+    $('here').textContent = pageNum + 1;
+    return;
+  }
+
+  box.innerHTML = shown.map(t => {
+    const due = human(t.deadlineDate);
+    const over = due && due.past && t.status !== 'DONE';
+
+    return `
+      <div class="row">
+        <div class="mark">${icon(t.status)}</div>
+        <div class="name">
+          <div class="t">Задача <span>№</span>${String(t.id).padStart(3, '0')}</div>
+          <div class="s">${t.assignedUserId
+            ? 'исполнитель #' + t.assignedUserId + ' · автор #' + (t.creatorId ?? '?')
+            : 'без исполнителя · автор #' + (t.creatorId ?? '?')}</div>
+        </div>
+        <div><span class="tag ${t.status}">${STAGE[t.status] || t.status}</span></div>
+        <div class="lvl ${t.priority}">${LEVEL[t.priority] || '—'}</div>
+        <div class="due ${over ? 'over' : ''}">
+          ${due ? due.day + ' ' + due.year + (over ? ' · просрочено' : '') + '<small>' + due.time + '</small>' : '—'}
+        </div>
+        <div class="acts">
+          ${t.status === 'CREATED' ? `<button class="act play" title="В работу" onclick="advance(${t.id},'start')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg></button>` : ''}
+          ${t.status === 'IN_PROGRESS' ? `<button class="act done" title="Закрыть" onclick="advance(${t.id},'complete')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button>` : ''}
+          <button class="act" title="Изменить" onclick="openEdit(${t.id})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+          <button class="act trash" title="Удалить" onclick="erase(${t.id})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+        </div>
+      </div>`;
+  }).join('');
+
+  $('info').textContent = 'показано ' + shown.length + ' из ' + pageSize;
+  $('back').disabled = pageNum === 0;
+  $('fwd').disabled = rows.length < pageSize;
+  $('here').textContent = pageNum + 1;
+}
+
+function lens(status, el) {
+  fStatus = status || '';
+  $('f-stage').value = fStatus;
+  if (el) {
+    document.querySelectorAll('.links a').forEach(a => a.removeAttribute('data-on'));
+    el.setAttribute('data-on', '');
+  }
+  pageNum = 0;
+  pull();
+}
+
+function restage() { fStatus = $('f-stage').value; pageNum = 0; pull(); }
+function relevel() { fPriority = $('f-level').value; pageNum = 0; pull(); }
+function resize() { pageSize = Number($('f-size').value); pageNum = 0; pull(); }
+
+function page(delta) {
+  const next = pageNum + delta;
+  if (next < 0) return;
+  pageNum = next;
+  pull();
+}
+
+function openNew() {
+  editing = null;
+  $('m-ttl').textContent = 'Новая задача';
+  $('m-sub').textContent = 'Заполните поля и сохраните';
+  $('m-save').textContent = 'Создать';
+  $('box-creator').hidden = false;
+  $('box-made').hidden = false;
+  $('box-note').hidden = true;
+  $('f-creator').value = '';
+  $('f-assigned').value = '';
+  $('f-priority').value = 'MEDIUM';
+  $('f-made').value = localValue(0);
+  $('f-due').value = localValue(7);
+  open();
+}
+
+function openEdit(id) {
+  const t = rows.find(r => r.id === id);
+  if (!t) return;
+  editing = id;
+  $('m-ttl').textContent = 'Задача №' + String(id).padStart(3, '0');
+  $('m-sub').textContent = STAGE[t.status] || t.status;
+  $('m-save').textContent = 'Сохранить';
+  $('box-creator').hidden = true;
+  $('box-made').hidden = true;
+  $('box-note').hidden = false;
+  $('f-assigned').value = t.assignedUserId ?? '';
+  $('f-priority').value = t.priority || 'MEDIUM';
+  if (t.deadlineDate) {
+    const d = new Date(t.deadlineDate);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    $('f-due').value = d.toISOString().slice(0, 16);
+  }
+  open();
+}
+
+function open() {
+  $('scrim').setAttribute('data-open', '');
+  $('modal').setAttribute('data-open', '');
+}
+
+function shut() {
+  $('scrim').removeAttribute('data-open');
+  $('modal').removeAttribute('data-open');
+}
+
+async function commit() {
+  const assignedUserId = $('f-assigned').value ? Number($('f-assigned').value) : null;
+  const priority = $('f-priority').value;
+  const due = $('f-due').value;
+
+  if (!due) return toast('Укажите срок сдачи', true);
+
+  const btn = $('m-save');
+  const label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Сохраняем';
+
+  try {
+    let res;
+    if (editing) {
+      res = await fetch(API + '/tasks/' + editing, {
+        method: 'PUT',
+        headers: auth(),
+        body: JSON.stringify({ assignedUserId, deadlineDate: due + ':00', priority })
+      });
+    } else {
+      const creatorId = Number($('f-creator').value);
+      if (!creatorId) throw new Error('Укажите постановщика');
+      res = await fetch(API + '/tasks', {
+        method: 'POST',
+        headers: auth(),
+        body: JSON.stringify({
+          creatorId,
+          assignedUserId,
+          createDateTime: ($('f-made').value || localValue(0)) + ':00',
+          deadlineDate: due + ':00',
+          priority
+        })
+      });
+    }
+    if (!res.ok) throw new Error(await reason(res));
+    toast(editing ? 'Задача обновлена' : 'Задача создана');
+    shut();
+    await pull();
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+async function advance(id, step) {
+  try {
+    const res = await fetch(API + '/tasks/' + id + '/' + step, { method: 'POST', headers: auth() });
+    if (!res.ok) throw new Error(await reason(res));
+    toast(step === 'start' ? 'Задача взята в работу' : 'Задача закрыта');
+    await pull();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+async function erase(id) {
+  if (!confirm('Удалить задачу №' + String(id).padStart(3, '0') + '?')) return;
+  try {
+    const res = await fetch(API + '/tasks/' + id, { method: 'DELETE', headers: auth() });
+    if (!res.ok) throw new Error(await reason(res));
+    toast('Задача удалена');
+    await pull();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+function leave() {
+  localStorage.removeItem('tf.token');
+  location.href = 'login.html';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') shut();
+  if (e.key === 'n' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); openNew(); }
+});
+
+(function start() {
+  if (!token()) return leave();
+
+  const name = localStorage.getItem('tf.user') || 'user';
+  $('nm').textContent = name;
+  $('av').textContent = name.slice(0, 1).toUpperCase();
+
+  try {
+    const claims = JSON.parse(atob(token().split('.')[1]));
+    $('rl').textContent = (claims.role || 'ROLE_USER').replace('ROLE_', '');
+  } catch {
+    $('rl').textContent = 'USER';
+  }
+
+  pull();
+})();
+</script>
+</body>
+</html>
