@@ -1,2 +1,5 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Frontend assets are not counted in GitHub language stats
+src/main/resources/static/** linguist-detectable=false
